@@ -2,7 +2,7 @@
 
 ## 4.3.0
 
-+ Resolve an issue where when passing a password resource via the pipeline to Update-PasswordStatePassword the password could be inadvently changed to EncryptedPassword, when the intention was only to change another field.
++ Resolve an issue where when passing a password resource via the pipeline to Update-PasswordStatePassword the password could be inadvertently changed to EncryptedPassword, when the intention was only to change another field.
 
 eg:
 
