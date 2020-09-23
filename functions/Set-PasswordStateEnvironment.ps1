@@ -1,55 +1,18 @@
-﻿<#
-.SYNOPSIS
-    Saves your password state environment configuration to be used when calling the rest api.
-.DESCRIPTION
-    Saves your password state environment configuration to be used when calling the rest api.
-    This enables quickly calling the API without having to enter a key each time or the URL, the key is stored encrypted.
-.PARAMETER baseuri
-    The base url of the passwordstate server. eg https://passwordstate
-.PARAMETER APIKey
-    For use if APIKey is the preferred authentication method.
-.PARAMETER WindowsAuthOnly
-    For use if Windows Passthrough is the preferred authentication method.
-.PARAMETER customcredentials
-    For use if windows custom credentials is the preferred authentication method.
-.EXAMPLE
-    PS C:\> Set-PasswordStateEnvironment -baseuri "https://passwordstateserver" -UseWindowsAuthOnly
-    Sets to use windows passthrough authentication to interact with the API
-.EXAMPLE
-    PS C:\> Set-PasswordStateEnvironment -baseuri "https://passwordstateserver" -APIKey "hdijdiwkjod9wu9dikwokd3uerunh"
-    Sets to use an API key interact with the API. Note that password lists can only be retrieved with the System API key.
-.INPUTS
-    Baseuri - Should be the Password State URL without any parameters on it.
-    UseWindowsAuthOnly - A switch value. (Don't use in conjunction with APIkey)
-    APIkey - The APIkey for the passwordstate API
-.OUTPUTS
-    No Output
-.NOTES
-    Daryl Newsholme 2018
-#>
-function Set-PasswordStateEnvironment {
+﻿function Set-PasswordStateEnvironment {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Justification = 'all passwords stored encrypted')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlaintextForPassword', '', Justification = 'no password')]
-    [CmdletBinding(DefaultParameterSetName = "Two", SupportsShouldProcess = $true)]
+    [CmdletBinding(DefaultParameterSetName = "Two", SupportsShouldProcess, ConfirmImpact = "High")]
     param (
-        [Parameter(ValueFromPipelineByPropertyName,Mandatory = $true)][string]$Baseuri,
-        [Parameter(ValueFromPipelineByPropertyName,ParameterSetName = 'One')][string]$Apikey,
-        [Parameter(ValueFromPipelineByPropertyName,ParameterSetName = 'One')][string]$PasswordGeneratorAPIkey,
-        [Parameter(ValueFromPipelineByPropertyName,ParameterSetName = 'Two')][switch]$WindowsAuthOnly,
-        [Parameter(ValueFromPipelineByPropertyName,ParameterSetName = 'Three')][pscredential]$customcredentials,
-        [Parameter(ValueFromPipelineByPropertyName,Mandatory = $false)][string]$path = [Environment]::GetFolderPath('UserProfile')
-
+        [Parameter(ValueFromPipelineByPropertyName, Mandatory = $true)][Alias('Baseuri')][uri]$Uri,
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'One')][string]$Apikey,
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'One')][string]$PasswordGeneratorAPIkey,
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'Two')][switch]$WindowsAuthOnly,
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'Three')][pscredential]$customcredentials,
+        [Parameter(ValueFromPipelineByPropertyName, Mandatory = $false)][string]$path = [Environment]::GetFolderPath('UserProfile'),
+        [Parameter()][bool]$SetPlainTextPasswords = $False
     )
 
     begin {
-        # ensure the uri is always in the correct format.
-        $uri = ([uri]$Baseuri)
-        if ($uri.IsDefaultPort -eq $true){
-            $Baseuri = '{0}://{1}' -f $uri.Scheme,$uri.DnsSafeHost
-        }
-        Else {
-            $Baseuri = '{0}://{1}:{2}' -f $uri.Scheme,$uri.Host,$uri.Port
-        }
         if ($WindowsAuthOnly -eq $true) {
             $AuthType = "WindowsIntegrated"
         }
@@ -59,7 +22,7 @@ function Set-PasswordStateEnvironment {
         Else {
             $AuthType = "APIKey"
         }
-        if ($env:PASSWORDSTATEPROFILE){
+        if ($env:PASSWORDSTATEPROFILE) {
             $path = $env:PASSWORDSTATEPROFILE
         }
         $profilepath = $path
@@ -67,34 +30,45 @@ function Set-PasswordStateEnvironment {
 
     process {
         # Build the custom object to be converted to JSON. Set APIKey as WindowsAuth if we are to use windows authentication.
-        $json = [pscustomobject] @{
-            "Baseuri"  = $Baseuri
-            "Apikey"   = switch ($AuthType) {
-                WindowsIntegrated {
-                    ""
-                }
-                WindowsCustom {
-                    [pscustomobject]@{
-                        "username" = $customcredentials.UserName
-                        "Password" = ($customcredentials.Password | ConvertFrom-SecureString)
-                    }
-                }
-                APIKey {
-                    ($Apikey | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString)
-
+        $JsonApiKey = switch ($AuthType) {
+            WindowsIntegrated { "" }
+            WindowsCustom {
+                @{
+                    "username" = $customcredentials.UserName
+                    "Password" = ($customcredentials.Password | ConvertFrom-SecureString)
                 }
             }
-            "AuthType" = $AuthType
+            APIKey {
+                ($Apikey | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString)
+
+            }
         }
-        if ($PasswordGeneratorAPIkey){
-            $json | Add-Member -MemberType NoteProperty -Name PasswordGeneratorAPIKey -Value ($PasswordGeneratorAPIkey | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString)
+        $json = @{
+            TimeoutSeconds = 60
+            Baseuri        = $Uri -replace '/$', ''
+            Apikey         = $JsonApiKey
+            AuthType       = $AuthType
+        }
+        if ($SetPlainTextPasswords) {
+            if ($PSCmdlet.ShouldProcess('Allow passwords to be returned in plain text')) {
+                $json['PasswordsInPlainText'] = $SetPlainTextPasswords
+            }
+            else {
+                $json['PasswordsInPlainText'] = $false
+            }
+        }
+        else {
+            $json['PasswordsInPlainText'] = $SetPlainTextPasswords
+        }
+
+        if ($PasswordGeneratorAPIkey) {
+            $json['PasswordGeneratorAPIKey'] = ($PasswordGeneratorAPIkey | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString)
         }
         $json = $json | ConvertTo-Json
     }
 
     end {
-        if ($PSCmdlet.ShouldProcess("$($profilepath)\passwordstate.json")) {
-            $json | Out-File "$($profilepath)\passwordstate.json"
-        }
+        $json | Out-File "$($profilepath)\passwordstate.json"
+        $Script:Preferences.Path = $profilepath
     }
 }

@@ -1,7 +1,7 @@
 ---
 external help file: passwordstate-management-help.xml
 Module Name: passwordstate-management
-online version:
+online version: https://github.com/dnewsholme/PasswordState-Management/blob/master/docs/Set-PasswordStateEnvironment.md
 schema: 2.0.0
 ---
 
@@ -14,19 +14,20 @@ Saves your password state environment configuration to be used when calling the 
 
 ### Two (Default)
 ```
-Set-PasswordStateEnvironment -Baseuri <String> [-WindowsAuthOnly] [-WhatIf] [-Confirm] [<CommonParameters>]
+Set-PasswordStateEnvironment -Uri <Uri> [-WindowsAuthOnly] [-path <String>] [-SetPlainTextPasswords <Boolean>]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### One
 ```
-Set-PasswordStateEnvironment -Baseuri <String> [-Apikey <String>] [-PasswordGeneratorAPIkey <String>] [-WhatIf]
- [-Confirm] [<CommonParameters>]
+Set-PasswordStateEnvironment -Uri <Uri> [-Apikey <String>] [-PasswordGeneratorAPIkey <String>] [-path <String>]
+ [-SetPlainTextPasswords <Boolean>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### Three
 ```
-Set-PasswordStateEnvironment -Baseuri <String> [-customcredentials <PSCredential>] [-WhatIf] [-Confirm]
- [<CommonParameters>]
+Set-PasswordStateEnvironment -Uri <Uri> [-customcredentials <PSCredential>] [-path <String>]
+ [-SetPlainTextPasswords <Boolean>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -52,22 +53,6 @@ Note that password lists can only be retrieved with the System API key.
 
 ## PARAMETERS
 
-### -Baseuri
-The base url of the passwordstate server.
-eg https://passwordstate
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Apikey
 For use if APIKey is the preferred authentication method.
 
@@ -79,12 +64,27 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -customcredentials
+For use if windows custom credentials is the preferred authentication method.
+
+```yaml
+Type: PSCredential
+Parameter Sets: Three
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
 ### -PasswordGeneratorAPIkey
-{{Fill PasswordGeneratorAPIkey Description}}
+The API Key for the password generator usage.
 
 ```yaml
 Type: String
@@ -94,7 +94,52 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -path
+The path to the json configuration file for the passwordstate environment.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -SetPlainTextPasswords
+Set to true, if plaintext passwords shall be displayed.
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Uri
+The url of the passwordstate website.
+
+```yaml
+Type: Uri
+Parameter Sets: (All)
+Aliases: Baseuri
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
@@ -109,17 +154,17 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -customcredentials
-For use if windows custom credentials is the preferred authentication method.
+### -Confirm
+Prompts you for confirmation before running the cmdlet.
 
 ```yaml
-Type: PSCredential
-Parameter Sets: Three
-Aliases:
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
 
 Required: False
 Position: Named
@@ -144,32 +189,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### Baseuri - Should be the Password State URL without any parameters on it.
-### UseWindowsAuthOnly - A switch value. (Don't use in conjunction with APIkey)
-### APIkey - The APIkey for the passwordstate API
+### System.Uri
+
+### System.String
+
+### System.Management.Automation.SwitchParameter
+
+### System.Management.Automation.PSCredential
+
 ## OUTPUTS
 
-### No Output
+### System.Object
 ## NOTES
 Daryl Newsholme 2018
 

@@ -1,16 +1,4 @@
-<#
-.SYNOPSIS
-    Retrieves the saved Passwordstate environment and decrypts it.
-.DESCRIPTION
-    Retrieves the saved Passwordstate environment and decrypts it.
-.EXAMPLE
-    PS C:\> Get-PasswordStateEnvironment
-.OUTPUTS
-    Retrieves the base uri and APIKey.
-.NOTES
-    Daryl Newsholme 2018
-#>
-function Get-PasswordStateEnvironment {
+﻿function Get-PasswordStateEnvironment {
     [CmdletBinding()]
     param (
         [Parameter(ValueFromPipelineByPropertyName,Mandatory = $false)][string]$path = [Environment]::GetFolderPath('UserProfile')
@@ -26,7 +14,11 @@ function Get-PasswordStateEnvironment {
         }
         try {
             # Get Profile path
-            $profilepath = $path
+            if ($Script:Preferences.Path -ne '') {
+                $profilepath=$Script:Preferences.Path
+            } else {
+                $profilepath = $path
+            }
             # Read in the password state environment json config file.
             $content = Get-Content "$($profilepath)\passwordstate.json" -ErrorAction Stop
         }
@@ -51,6 +43,9 @@ function Get-PasswordStateEnvironment {
             $cred2 = New-Object System.Management.Automation.PSCredential -ArgumentList "username", $($output.PasswordGeneratorAPIKey | ConvertTo-SecureString)
             $pwgen = $cred2.GetNetworkCredential().Password
             $output.PasswordGeneratorAPIKey = $pwgen
+        }
+        if ($null -eq $output.TimeoutSeconds){
+            $output | Add-Member -MemberType NoteProperty -Name "TimeoutSeconds" -Value 60
         }
     }
 

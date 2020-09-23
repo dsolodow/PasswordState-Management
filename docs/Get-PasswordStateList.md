@@ -1,7 +1,7 @@
 ---
 external help file: passwordstate-management-help.xml
 Module Name: passwordstate-management
-online version:
+online version: https://github.com/dnewsholme/PasswordState-Management/blob/master/docs/Get-PasswordStateList.md
 schema: 2.0.0
 ---
 
@@ -14,17 +14,21 @@ Gets all password lists from the API (Only those you have permissions to.)
 
 ### ID (Default)
 ```
-Get-PasswordStateList [[-PasswordListID] <Int32>] [-PreventAuditing] [<CommonParameters>]
+Get-PasswordStateList [[-PasswordListID] <Int32>] [-PreventAuditing] [[-Reason] <String>] [<CommonParameters>]
 ```
 
 ### Specific
 ```
 Get-PasswordStateList [[-PasswordList] <String>] [[-Description] <String>] [[-TreePath] <String>]
- [[-SiteID] <Int32>] [[-SiteLocation] <String>] [-PreventAuditing] [<CommonParameters>]
+ [[-SiteID] <Int32>] [[-SiteLocation] <String>] [-PreventAuditing] [[-Reason] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
 Gets all password lists from the API (Only those you have permissions to.)
+
+**Note 1**: You can perform an exact match search by enclosing your search criteria in double quotes, i.e. `'"MyList"'`
+
+**Note 2**: By default, the retrieval of (all) PasswordList records will add one Audit record for every PasswordList record returned. If you wish to prevent audit records from being added, you can add the `-PreventAuditing` parameter.
 
 ## EXAMPLES
 
@@ -33,35 +37,35 @@ Gets all password lists from the API (Only those you have permissions to.)
 Get-PasswordStateList
 ```
 
+Get all available PasswordState Lists the user/api key has access to.
+
 ### EXAMPLE 2
 ```
 Get-PasswordStateList -PasswordListID 3
 ```
+
+Get the PasswordState List with ID 3.
 
 ### EXAMPLE 3
 ```
 Get-PasswordStateList -PasswordList 'Test' -TreePath '\TestPath\Lists' -SiteID 123
 ```
 
-## PARAMETERS
+Search for a PasswordState List with Name Test on Path \TestPath\Lists and on Site with ID 123.
 
-### -PasswordListID
-Gets the passwordlist based on ID, when omitted, gets all the passord lists
-
-```yaml
-Type: Int32
-Parameter Sets: ID
-Aliases:
-
-Required: False
-Position: 1
-Default value: 0
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
+### EXAMPLE 4
+```
+Get-PasswordStateList -PasswordList 'Test' -TreePath '\TestPath\Lists' -SiteID 123 -Reason "Ticket #202005151234567"
 ```
 
-### -PasswordList
-The name for the PasswordList to find
+Search for a PasswordState List with Name Test on Path \TestPath\Lists and on Site with ID 123. Also specifying the reason "Ticket #202005151234567" why the search for the passwordlist object was requested.  
+The Reason will be added as audit entry to every PasswordList object that will be found with these search criteria.
+
+## PARAMETERS
+
+### -Description
+An optional parameter to filter the search on description.
+The description is generally used as a longer verbose description of the nature of the Password object.
 
 ```yaml
 Type: String
@@ -75,8 +79,100 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -Description
-The description for the PasswordList to find
+### -PasswordList
+The name for the PasswordList to search for.
+
+```yaml
+Type: String
+Parameter Sets: Specific
+Aliases:
+
+Required: False
+Position: 0
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -PasswordListID
+Gets the PasswordList based on ID, when omitted, gets all the password lists.
+
+```yaml
+Type: Int32
+Parameter Sets: ID
+Aliases:
+
+Required: False
+Position: 0
+Default value: 0
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -PreventAuditing
+By default, the creation/modification or retrieval of (all) Passwords records will add one Audit record for every Password record returned. If you wish to prevent audit records from being added, you can add this `-PreventAuditing` parameter.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Reason
+A reason which can be logged for auditing of why a password was retrieved.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 6
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -SiteID
+An optional parameter to filter the search on the site ID.  
+If you do not specify this parameter, it will report data based on all Site Locations. Values are 0 for Internal, and all other SiteID's can be found on the screen `Administration -> Remote Site Administration -> Remote Site Locations`.
+
+```yaml
+Type: Int32
+Parameter Sets: Specific
+Aliases:
+
+Required: False
+Position: 3
+Default value: 0
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -SiteLocation
+An optional parameter to filter the search on the site location.  
+If you do not specify this parameter, it will report data based on all Site Locations. Values are the name of the Site Location that can be found on the screen `Administration -> Remote Site Administration -> Remote Site Locations`.
+
+```yaml
+Type: String
+Parameter Sets: Specific
+Aliases:
+
+Required: False
+Position: 4
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -TreePath
+The TreePath where the PasswordList can be found.
 
 ```yaml
 Type: String
@@ -90,74 +186,20 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -TreePath
-The treepath where the PasswordList should be found
-
-```yaml
-Type: String
-Parameter Sets: Specific
-Aliases:
-
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -SiteID
-The siteID for the PasswordList
-
-```yaml
-Type: Int32
-Parameter Sets: Specific
-Aliases:
-
-Required: False
-Position: 4
-Default value: 0
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -SiteLocation
-The sitelocation for the PasswordList
-
-```yaml
-Type: String
-Parameter Sets: Specific
-Aliases:
-
-Required: False
-Position: 5
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -PreventAuditing
-{{Fill PreventAuditing Description}}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 6
-Default value: False
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
 ### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
+### System.Int32
+
+### System.String
+
+### System.Management.Automation.SwitchParameter
+
 ## OUTPUTS
 
-### Returns the lists including their names and IDs.
+### System.Object
 ## NOTES
 2018 - Daryl Newsholme
 2019 - Jarno Colombeen

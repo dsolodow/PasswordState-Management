@@ -1,7 +1,7 @@
 ---
 external help file: passwordstate-management-help.xml
 Module Name: passwordstate-management
-online version:
+online version: https://github.com/dnewsholme/PasswordState-Management/blob/master/docs/New-RandomPassword.md
 schema: 2.0.0
 ---
 
@@ -46,32 +46,17 @@ New-RandomPassword -PolicyID 2
 
 ## PARAMETERS
 
-### -length
-Length for the generated password
+### -excludedcharacters
+I characters should be excluded, add them here.
 
 ```yaml
-Type: Int32
+Type: String
 Parameter Sets: General
 Aliases:
 
 Required: False
-Position: 1
-Default value: 12
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -PolicyID
-ID for an existing Password Generator ID
-
-```yaml
-Type: Int32
-Parameter Sets: PolicyID
-Aliases:
-
-Required: True
-Position: 1
-Default value: 0
+Position: 6
+Default value: None
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
@@ -85,37 +70,7 @@ Parameter Sets: General
 Aliases:
 
 Required: False
-Position: 2
-Default value: False
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -includespecialcharacters
-If special characters such as ^_\> should be included.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: General
-Aliases:
-
-Required: False
-Position: 3
-Default value: False
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -includenumbers
-If numbers should be included.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: General
-Aliases:
-
-Required: False
-Position: 4
+Position: 1
 Default value: False
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
@@ -130,7 +85,37 @@ Parameter Sets: General
 Aliases:
 
 Required: False
-Position: 5
+Position: 4
+Default value: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -includenumbers
+If numbers should be included.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: General
+Aliases:
+
+Required: False
+Position: 3
+Default value: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -includespecialcharacters
+If special characters such as ^_\> should be included.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: General
+Aliases:
+
+Required: False
+Position: 2
 Default value: False
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
@@ -145,23 +130,38 @@ Parameter Sets: General
 Aliases:
 
 Required: False
-Position: 6
+Position: 5
 Default value: False
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -excludedcharacters
-{{Fill excludedcharacters Description}}
+### -length
+Length for the generated password
 
 ```yaml
-Type: String
+Type: Int32
 Parameter Sets: General
 Aliases:
 
 Required: False
-Position: 7
-Default value: None
+Position: 0
+Default value: 12
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -PolicyID
+ID for an existing Password Generator ID
+
+```yaml
+Type: Int32
+Parameter Sets: PolicyID
+Aliases:
+
+Required: True
+Position: 0
+Default value: 0
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
@@ -181,6 +181,21 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -Confirm
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -WhatIf
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
@@ -197,30 +212,20 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### PasswordGeneratorID - Optional parameter if you want to generate a more or less secure password.
+### System.Int32
+
+### System.Management.Automation.SwitchParameter
+
+### System.String
+
 ## OUTPUTS
 
-### A string value of the generated password.
+### System.Object
 ## NOTES
 Daryl Newsholme 2019
 
