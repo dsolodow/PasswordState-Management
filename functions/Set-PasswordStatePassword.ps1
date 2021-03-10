@@ -24,7 +24,7 @@
                 return $true
             })]
         [string]$Password,
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 4)][ValidateLength(1, 255)][string]$Description,
+        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 4)][ValidateLength(0, 255)][string]$Description,
         [parameter(ValueFromPipelineByPropertyName, Mandatory = $true, ParameterSetName = "GeneratePassword", Position = 0)]
         [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "ResetSchedule", Position = 10)]
         [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "Reset", Position = 10)]
@@ -32,8 +32,8 @@
         [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "HeartbeatSchedule", Position = 10)]
         [switch]$GeneratePassword,
         [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 6)][string]$Notes,
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 7)][ValidateLength(1, 255)][string]$Url,
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 8)][ValidateLength(1, 50)][string]$AccountType,
+        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 7)][ValidateLength(0, 255)][string]$Url,
+        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 8)][ValidateLength(0, 50)][string]$AccountType,
         [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 9)][AllowNull()][Nullable[System.Int32]]$AccountTypeID = $null,
         [Parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 10)][string]$GenericField1 = $null,
         [Parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 11)][string]$GenericField2 = $null,
@@ -88,19 +88,13 @@
         [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "Reset", Position = 5)]
         [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "ResetSchedule", Position = 5)]
         [Nullable[System.Int32]]$ValidationScriptID = $null,
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "Reset", Position = 6)]
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "ResetSchedule", Position = 6)]
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "Heartbeat", Position = 3)]
         [ValidateLength(1, 200)]
         [string]$HostName,
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "Reset", Position = 7)]
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "ResetSchedule", Position = 7)]
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "Heartbeat", Position = 4)]
         [ValidateLength(1, 50)]
         [string]$ADDomainNetBIOS,
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "Heartbeat", Position = 5)]
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "Reset", Position = 8)]
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "ResetSchedule", Position = 8)]
+        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "Heartbeat", Position = 3)]
+        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "Reset", Position = 6)]
+        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, ParameterSetName = "ResetSchedule", Position = 6)]
         [switch]$ValidateWithPrivAccount,
         [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 24)]
         [ValidateScript( {
@@ -108,7 +102,10 @@
                 function isDate([string]$StrDate) {
                     [boolean]($StrDate -as [DateTime])
                 }
-                if (!(isDate $_)) {
+                if ([string]::IsNullOrEmpty($_)) {
+                    $true
+                }
+                elseif (!(isDate $_)) {
                     throw "Given ExpiryDate '$_' is not a valid Date format. Also, please specify the ExpiryDate in the date format that you have chosen in 'System Settings - miscellaneous - Default Locale' (Default: 'YYYY-MM-DD')."
                 }
                 else {
@@ -117,8 +114,8 @@
             })]
         [string]$ExpiryDate,
         [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 25)][switch]$AllowExport,
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 25)][ValidateLength(1, 200)][string]$WebUser_ID,
-        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 25)][ValidateLength(1, 200)][string]$WebPassword_ID,
+        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 25)][ValidateLength(0, 200)][string]$WebUser_ID,
+        [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 25)][ValidateLength(0, 200)][string]$WebPassword_ID,
         [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 26)][string]$Reason
     )
 
@@ -168,7 +165,7 @@
                                     $result | Add-Member -MemberType NoteProperty -Name $i -Value $PSBoundParameters.$($i).IsPresent -ErrorAction Stop
                                 }
                                 catch {
-                                    throw $_.Exception
+                                    throw $_.Exception.Message
                                 }
                             }
                             else {
@@ -176,12 +173,16 @@
                                     $result | Add-Member -MemberType NoteProperty -Name $i -Value $PSBoundParameters.$($i) -ErrorAction Stop
                                 }
                                 catch {
-                                    throw $_.Exception
+                                    throw $_.Exception.Message
                                 }
                             }
                         }
                     }
                 }
+            }
+            # Change in v9: If password of existing object should not be changed (-Password or -GeneratePassword not given), we need to remove it from the result that should be send to the api as change request
+            if ($PSBoundParameters.Keys -notcontains "Password") {
+                $result = $result | Select-Object -Property * -ExcludeProperty Password
             }
             # Store in a new variable and remove all null values as password state doesn't like nulls.
             $body = $result
@@ -204,7 +205,7 @@
                 $output = Set-PasswordStateResource -uri $uri -body $body @parms -ErrorAction Stop
             }
             catch {
-                throw $_.Exception
+                throw $_.Exception.Message
             }
             if ($output) {
                 if ((Get-Member -InputObject $output -MemberType NoteProperty -Name Status) -and (Get-Member -InputObject $output -MemberType NoteProperty -Name CurrentPassword) -and (Get-Member -InputObject $output -MemberType NoteProperty -Name NewPassword)) {

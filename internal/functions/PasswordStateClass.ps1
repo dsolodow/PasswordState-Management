@@ -1,6 +1,8 @@
 ﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Justification = 'Script is converting to secure string.')]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '', Justification = 'Script is converting to secure string.')]
 # Create Class
+param()
+
 Class EncryptedPassword {
     EncryptedPassword ($Password) {
         $result = [string]::IsNullOrEmpty($Password)
@@ -50,19 +52,19 @@ class PasswordResult {
             }
             $user += "$($this.Username)"
         }
-        $result = [String]::IsNullOrEmpty($this.Password.Password)
-        If ($this.Password.GetType().Name -ne 'String' -and $result -eq $false) {
+        If ($this.Password.GetType().Name -ne 'String') {
             $output = [PSCredential]::new($user, $this.Password.Password)
             return $output
         }
-        if ($result -eq $true) {
-            return $null
-        }
+
         Else {
-            $this.Password = [EncryptedPassword]$this.Password
-            $output = [PSCredential]::new($user, $this.Password.Password)
+            if ($this.Password.Length -lt 1) {
+                return $null
+            }
+            $output = [PSCredential]::new($user, $(ConvertTo-SecureString -String $this.Password -AsPlainText -Force))
             return $output
         }
+
     }
     [String]$Description
     [String]$Domain
@@ -79,12 +81,14 @@ class PasswordResult {
     [String]$GenericField8
     [String]$GenericField9
     [String]$GenericField10
+    [System.Array]$GenericFieldInfo
     [Nullable[System.Int32]]$AccountTypeID
     [string]$Notes
     [string]$URL
     [string]$ExpiryDate
     [System.Boolean]$AllowExport
     [string]$AccountType
+    [System.Array]$OTP
     # Constructor used to initiate the default property set.
     PasswordResult() {
         [string[]]$DefaultProperties = 'PasswordID', 'Title', 'Username', 'Password', 'Description', 'Domain'
